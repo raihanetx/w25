@@ -481,7 +481,23 @@
                 sessionStorage.setItem('isAdminAuthenticated', 'true');
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('dashboard-content').style.display = 'block';
-                fetchOrders();
+
+                // Fetch all data after login
+                const promises = [
+                    fetchOrders(),
+                    fetchCategories(),
+                    fetchProducts(),
+                    fetchCoupons(),
+                    fetchAdminReviews()
+                ];
+
+                Promise.allSettled(promises).then(results => {
+                    results.forEach((result, index) => {
+                        if (result.status === 'rejected') {
+                            console.error(`Error fetching data for promise ${index}:`, result.reason);
+                        }
+                    });
+                });
             } else {
                 alert('Incorrect password. Please try again.');
             }
@@ -498,9 +514,10 @@
         let salesChartInstance = null;
 
         function renderSalesReport(days) {
-            if (allOrdersData.length === 0) return;
+            try {
+                if (allOrdersData.length === 0) return;
 
-            const now = new Date();
+                const now = new Date();
             const salesData = {};
             let labels = [];
             let title = '';
@@ -600,17 +617,33 @@
                     }
                 }
             });
+            } catch (error) {
+                console.error("Error rendering sales report:", error);
+                const chartDiv = document.getElementById('salesChart');
+                if(chartDiv) chartDiv.parentElement.innerHTML = '<p style="color: red;">Could not load sales report.</p>';
+            }
         }
 
         function checkAuth() {
             if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('dashboard-content').style.display = 'block';
-                fetchOrders();
-                fetchCategories();
-                fetchProducts();
-                fetchCoupons();
-                fetchPendingReviews();
+
+                const promises = [
+                    fetchOrders(),
+                    fetchCategories(),
+                    fetchProducts(),
+                    fetchCoupons(),
+                    fetchAdminReviews()
+                ];
+
+                Promise.allSettled(promises).then(results => {
+                    results.forEach((result, index) => {
+                        if (result.status === 'rejected') {
+                            console.error(`Error fetching data for promise ${index}:`, result.reason);
+                        }
+                    });
+                });
             }
         }
 
@@ -635,30 +668,35 @@
 
         function renderCoupons(coupons) {
             const tbody = document.getElementById('coupons-tbody');
-            tbody.innerHTML = '';
+            try {
+                tbody.innerHTML = '';
 
-            if (coupons.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No coupons found.</td></tr>`;
-                return;
+                if (coupons.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No coupons found.</td></tr>`;
+                    return;
+                }
+
+                coupons.forEach(c => {
+                    const row = document.createElement('tr');
+                    const usage = c.usage_limit > 0 ? `${c.times_used || 0} / ${c.usage_limit}` : 'Unlimited';
+                    row.innerHTML = `
+                        <td>${c.id}</td>
+                        <td>${c.code}</td>
+                        <td>${c.discount_type}</td>
+                        <td>${c.discount_value}${c.discount_type === 'percentage' ? '%' : ''}</td>
+                        <td>${usage}</td>
+                        <td>${c.expiry_date || 'N/A'}</td>
+                        <td>
+                            <button class="btn" onclick="showCouponModal(${c.id})">Edit</button>
+                            <button class="btn" onclick="deleteCoupon(${c.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error rendering coupons:", error);
+                tbody.innerHTML = `<tr><td colspan="7" style="color: red;">Error displaying coupons. Check console.</td></tr>`;
             }
-
-            coupons.forEach(c => {
-                const row = document.createElement('tr');
-                const usage = c.usage_limit > 0 ? `${c.times_used || 0} / ${c.usage_limit}` : 'Unlimited';
-                row.innerHTML = `
-                    <td>${c.id}</td>
-                    <td>${c.code}</td>
-                    <td>${c.discount_type}</td>
-                    <td>${c.discount_value}${c.discount_type === 'percentage' ? '%' : ''}</td>
-                    <td>${usage}</td>
-                    <td>${c.expiry_date || 'N/A'}</td>
-                    <td>
-                        <button class="btn" onclick="showCouponModal(${c.id})">Edit</button>
-                        <button class="btn" onclick="deleteCoupon(${c.id})">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
         }
 
         function showCouponModal(couponId = null) {
@@ -795,64 +833,74 @@
 
         function renderPendingReviews(reviews) {
             const tbody = document.getElementById('pending-reviews-tbody');
-            tbody.innerHTML = '';
+            try {
+                tbody.innerHTML = '';
 
-            if (reviews.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending reviews found.</td></tr>`;
-                return;
+                if (reviews.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending reviews found.</td></tr>`;
+                    return;
+                }
+
+                reviews.forEach(r => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${r.productName}</td>
+                        <td>${r.author}</td>
+                        <td>${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5 - r.rating)}</td>
+                        <td>${r.text}</td>
+                        <td>
+                            <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'approve')">Approve</button>
+                            <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error rendering pending reviews:", error);
+                tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error displaying pending reviews. Check console.</td></tr>`;
             }
-
-            reviews.forEach(r => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${r.productName}</td>
-                    <td>${r.author}</td>
-                    <td>${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5 - r.rating)}</td>
-                    <td>${r.text}</td>
-                    <td>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'approve')">Approve</button>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
         }
 
         function renderApprovedReviews(reviews) {
             const tbody = document.getElementById('approved-reviews-tbody');
-            tbody.innerHTML = '';
+            try {
+                tbody.innerHTML = '';
 
-            if (reviews.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No approved reviews found.</td></tr>`;
-                return;
+                if (reviews.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No approved reviews found.</td></tr>`;
+                    return;
+                }
+
+                // Sort to show featured reviews first
+                reviews.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+
+                reviews.forEach(r => {
+                    const row = document.createElement('tr');
+                    const featureButtonText = r.featured ? 'Unfeature' : 'Feature';
+                    const featureAction = r.featured ? 'unfeature' : 'feature';
+
+                    const actionsHTML = r.id ? `
+                        <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
+                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
+                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                    ` : '<span style="color: #999;">Actions unavailable (missing review ID)</span>';
+
+                    row.innerHTML = `
+                        <td>${r.productName || 'N/A'}</td>
+                        <td>${r.author || 'N/A'}</td>
+                        <td>${'&#9733;'.repeat(r.rating || 0)}${'&#9734;'.repeat(5 - (r.rating || 0))}</td>
+                        <td>${r.text || ''}</td>
+                        <td>${r.featured ? '<i class="fas fa-star" style="color: #f1c40f;"></i> Featured' : 'Standard'}</td>
+                        <td>
+                            ${actionsHTML}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error rendering approved reviews:", error);
+                tbody.innerHTML = `<tr><td colspan="6" style="color: red;">Error displaying approved reviews. Check console.</td></tr>`;
             }
-
-            // Sort to show featured reviews first
-            reviews.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-
-            reviews.forEach(r => {
-                const row = document.createElement('tr');
-                const featureButtonText = r.featured ? 'Unfeature' : 'Feature';
-                const featureAction = r.featured ? 'unfeature' : 'feature';
-
-                const actionsHTML = r.id ? `
-                    <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
-                    <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
-                    <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
-                ` : '<span style="color: #999;">Actions unavailable (missing review ID)</span>';
-
-                row.innerHTML = `
-                    <td>${r.productName || 'N/A'}</td>
-                    <td>${r.author || 'N/A'}</td>
-                    <td>${'&#9733;'.repeat(r.rating || 0)}${'&#9734;'.repeat(5 - (r.rating || 0))}</td>
-                    <td>${r.text || ''}</td>
-                    <td>${r.featured ? '<i class="fas fa-star" style="color: #f1c40f;"></i> Featured' : 'Standard'}</td>
-                    <td>
-                        ${actionsHTML}
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
         }
 
         function showEditReviewModal(productId, reviewId, text, rating) {
@@ -940,28 +988,33 @@
 
         function renderProducts(products) {
             const tbody = document.getElementById('products-tbody');
-            tbody.innerHTML = '';
+            try {
+                tbody.innerHTML = '';
 
-            if (products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No products found.</td></tr>`;
-                return;
+                if (products.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No products found.</td></tr>`;
+                    return;
+                }
+
+                products.forEach(p => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${p.id}</td>
+                        <td>${p.name}</td>
+                        <td>${p.category}</td>
+                        <td>${p.price || 'N/A'}</td>
+                        <td>${p.stock}</td>
+                        <td>
+                            <button class="btn" onclick="showProductModal(${p.id})">Edit</button>
+                            <button class="btn" onclick="deleteProduct(${p.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error rendering products:", error);
+                tbody.innerHTML = `<tr><td colspan="6" style="color: red;">Error displaying products. Check console.</td></tr>`;
             }
-
-            products.forEach(p => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${p.id}</td>
-                    <td>${p.name}</td>
-                    <td>${p.category}</td>
-                    <td>${p.price || 'N/A'}</td>
-                    <td>${p.stock}</td>
-                    <td>
-                        <button class="btn" onclick="showProductModal(${p.id})">Edit</button>
-                        <button class="btn" onclick="deleteProduct(${p.id})">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
         }
 
         function showProductModal(productId = null) {
@@ -1133,26 +1186,31 @@
 
         function renderCategories(categories) {
             const tbody = document.getElementById('categories-tbody');
-            tbody.innerHTML = '';
+            try {
+                tbody.innerHTML = '';
 
-            if (categories.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No categories found.</td></tr>`;
-                return;
+                if (categories.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No categories found.</td></tr>`;
+                    return;
+                }
+
+                categories.forEach(cat => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-id', cat.id);
+                    row.innerHTML = `
+                        <td data-field="name">${cat.name}</td>
+                        <td data-field="icon"><i class="${cat.icon}"></i> ${cat.icon}</td>
+                        <td>
+                            <button class="btn" onclick="editCategory('${cat.id}')">Edit</button>
+                            <button class="btn" onclick="deleteCategory('${cat.id}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error rendering categories:", error);
+                tbody.innerHTML = `<tr><td colspan="3" style="color: red;">Error displaying categories. Check console.</td></tr>`;
             }
-
-            categories.forEach(cat => {
-                const row = document.createElement('tr');
-                row.setAttribute('data-id', cat.id);
-                row.innerHTML = `
-                    <td data-field="name">${cat.name}</td>
-                    <td data-field="icon"><i class="${cat.icon}"></i> ${cat.icon}</td>
-                    <td>
-                        <button class="btn" onclick="editCategory('${cat.id}')">Edit</button>
-                        <button class="btn" onclick="deleteCategory('${cat.id}')">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
         }
 
         document.getElementById('add-category-form').addEventListener('submit', async function(event) {
@@ -1171,6 +1229,7 @@
                     alert('Category added!');
                     fetchCategories();
                     this.reset();
+                    localStorage.setItem('categories_updated', 'true');
                 } else {
                     alert(`Error: ${result.message}`);
                 }
@@ -1266,47 +1325,52 @@
 
         function renderOrders(orders) {
             const tbody = document.getElementById('orders-tbody');
-            tbody.innerHTML = '';
+            try {
+                tbody.innerHTML = '';
 
-            if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No orders found.</td></tr>`;
-                return;
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No orders found.</td></tr>`;
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const itemsHtml = order.items.map(item => {
+                        const duration = item.selectedDurationLabel ? ` (${item.selectedDurationLabel})` : '';
+                        return `<div>${item.name}${duration} x ${item.quantity}</div>`;
+                    }).join('');
+
+                    const receivedAt = new Date(order.received_at).toLocaleString('en-GB');
+
+                    const row = document.createElement('tr');
+                    const totalAmountCell = `৳${parseFloat(order.totalAmount).toFixed(2)}`;
+                    const couponCodeHtml = order.coupon_code ? `<br><small style="color: #27ae60; font-weight: bold;">Coupon: ${order.coupon_code}</small>` : '';
+
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${order.customer.name}</td>
+                        <td>${order.customer.email}<br>${order.customer.phone}</td>
+                        <td>${itemsHtml}</td>
+                        <td>${totalAmountCell}${couponCodeHtml}</td>
+                        <td>
+                            <select class="status-select" data-order-id="${order.id}">
+                                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Confirmed" ${order.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
+                        <td>${receivedAt}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Add event listeners to the new select elements
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', updateOrderStatus);
+                });
+            } catch (error) {
+                console.error("Error rendering orders:", error);
+                tbody.innerHTML = `<tr><td colspan="7" style="color: red;">Error displaying orders. Check console.</td></tr>`;
             }
-
-            orders.forEach(order => {
-                const itemsHtml = order.items.map(item => {
-                    const duration = item.selectedDurationLabel ? ` (${item.selectedDurationLabel})` : '';
-                    return `<div>${item.name}${duration} x ${item.quantity}</div>`;
-                }).join('');
-
-                const receivedAt = new Date(order.received_at).toLocaleString('en-GB');
-
-                const row = document.createElement('tr');
-                const totalAmountCell = `৳${parseFloat(order.totalAmount).toFixed(2)}`;
-                const couponCodeHtml = order.coupon_code ? `<br><small style="color: #27ae60; font-weight: bold;">Coupon: ${order.coupon_code}</small>` : '';
-
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.customer.name}</td>
-                    <td>${order.customer.email}<br>${order.customer.phone}</td>
-                    <td>${itemsHtml}</td>
-                    <td>${totalAmountCell}${couponCodeHtml}</td>
-                    <td>
-                        <select class="status-select" data-order-id="${order.id}">
-                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="Confirmed" ${order.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
-                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                        </select>
-                    </td>
-                    <td>${receivedAt}</td>
-                `;
-                tbody.appendChild(row);
-            });
-            
-            // Add event listeners to the new select elements
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.addEventListener('change', updateOrderStatus);
-            });
         }
 
         async function updateOrderStatus(event) {
