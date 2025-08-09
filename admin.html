@@ -198,6 +198,7 @@
                 <div class="form-group">
                     <label for="product-long-description">Long Description</label>
                     <textarea id="product-long-description" rows="6"></textarea>
+                    <p style="font-size: 0.8rem; color: #666;">Use **text** to make text bold.</p>
                 </div>
                  <div class="form-group">
                     <label for="product-category">Category</label>
@@ -345,6 +346,18 @@
                     </table>
                 </div>
                  <div id="category-loader" class="loader" style="display:none;">Loading categories...</div>
+            </section>
+
+            <section id="general-settings-section" style="margin-top: 3rem; margin-bottom: 3rem;">
+                <h2>General Settings</h2>
+                <div id="settings-container" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; font-weight: normal;">
+                            <input type="checkbox" id="show-stock-out-label" style="width: auto; margin-right: 10px; height: 1rem; width: 1rem;">
+                            Show "Stock Out" label on product cards when stock is zero
+                        </label>
+                    </div>
+                </div>
             </section>
 
             <section id="product-section" style="margin-top: 3rem;">
@@ -1190,6 +1203,40 @@
 
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', checkAuth);
+
+        // Limit short description to 3 lines
+        document.addEventListener('DOMContentLoaded', () => {
+            const shortDescTextarea = document.getElementById('product-description');
+            if (shortDescTextarea) {
+                shortDescTextarea.addEventListener('input', function(e) {
+                    const maxLines = 3;
+                    const lines = e.target.value.split('\n');
+
+                    if (lines.length > maxLines) {
+                        e.target.value = lines.slice(0, maxLines).join('\n');
+                    }
+                });
+            }
+        });
+
+        // Handle General Settings
+        document.addEventListener('DOMContentLoaded', () => {
+            const showStockOutLabelCheckbox = document.getElementById('show-stock-out-label');
+
+            if (showStockOutLabelCheckbox) {
+                // Load saved setting
+                const savedSetting = localStorage.getItem('showStockOutLabel');
+                if (savedSetting === 'true') {
+                    showStockOutLabelCheckbox.checked = true;
+                }
+
+                // Save setting on change
+                showStockOutLabelCheckbox.addEventListener('change', function() {
+                    localStorage.setItem('showStockOutLabel', this.checked);
+                    alert('Setting saved!');
+                });
+            }
+        });
     </script>
 </body>
 </html>
