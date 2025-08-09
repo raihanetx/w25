@@ -5,195 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Think Plus BD</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #8F87F1;
-            --secondary-color: #FFFFFF;
-            --text-color: #333333;
-            --background-color: #f8f9fa;
-            --header-height: 60px;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-        .header {
-            background-color: var(--primary-color);
-            color: var(--secondary-color);
-            padding: 0 2rem;
-            height: var(--header-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-            font-size: 1.5rem;
-            margin: 0;
-        }
-        .container {
-            padding: 2rem;
-        }
-        .dashboard-controls {
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .btn {
-            background-color: var(--primary-color);
-            color: var(--secondary-color);
-            border: none;
-            padding: 0.8rem 1.2rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-        .btn:hover {
-            background-color: #7a70e8;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: var(--secondary-color);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-        th {
-            background-color: #f1f3f5;
-            font-weight: 600;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        tr:hover {
-            background-color: #f8f9fa;
-        }
-        .status-select {
-            padding: 0.5rem;
-            border-radius: 6px;
-            border: 1px solid #ced4da;
-        }
-        .status-Pending { background-color: #fff0c2; color: #8c6d0f; }
-        .status-Confirmed { background-color: #c8f5d7; color: #1e7e3c; }
-        .status-Cancelled { background-color: #f8d7da; color: #721c24; }
-
-        .loader {
-            text-align: center;
-            padding: 3rem;
-            font-size: 1.5rem;
-        }
-        #login-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        #login-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        #login-box input {
-            padding: 0.8rem;
-            font-size: 1rem;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #login-box button {
-            width: 100%;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 2rem;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 700px;
-            border-radius: 8px;
-        }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #product-form .form-group {
-            margin-bottom: 1rem;
-        }
-        #product-form label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        #product-form input[type="text"],
-        #product-form input[type="number"],
-        #product-form textarea,
-        #product-form select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #durations-container .duration-item {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
-        .summary-box-container {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            text-align: center;
-        }
-        .summary-box {
-            background-color: #f1f3f5;
-            padding: 1.5rem;
-            border-radius: 8px;
-            flex-grow: 1;
-            min-width: 150px;
-        }
-        .summary-box h3 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.1rem;
-            color: #868e96;
-        }
-        .summary-box p {
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-    </style>
+    <link rel="stylesheet" href="admin_style.css">
 </head>
 <body>
 
@@ -206,6 +18,193 @@
         </div>
     </div>
 
+    <div class="sidebar" id="sidebar" style="display: none;">
+        <div class="sidebar-header">
+            Think Plus BD
+        </div>
+        <ul class="sidebar-nav">
+            <li class="sidebar-nav-item active" onclick="showSection('dashboard-summary')"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+            <li class="sidebar-nav-item" onclick="showSection('orders-section')"><i class="fas fa-shopping-cart"></i> Orders</li>
+            <li class="sidebar-nav-item" onclick="showSection('product-section')"><i class="fas fa-box"></i> Products</li>
+            <li class="sidebar-nav-item" onclick="showSection('category-section')"><i class="fas fa-tags"></i> Categories</li>
+            <li class="sidebar-nav-item" onclick="showSection('coupon-section')"><i class="fas fa-percent"></i> Coupons</li>
+            <li class="sidebar-nav-item" onclick="showSection('review-management-section')"><i class="fas fa-star"></i> Reviews</li>
+            <li class="sidebar-nav-item" onclick="showSection('general-settings-section')"><i class="fas fa-cog"></i> Settings</li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="btn btn-danger" onclick="logout()" style="width: 100%;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="main-content" style="display: none;">
+        <header class="header">
+            <h1 id="header-title">Dashboard</h1>
+        </header>
+
+        <main class="container">
+            <section id="dashboard-summary" class="admin-section active">
+                 <h2>Sales Summary</h2>
+                <div id="sales-summary-container" class="summary-box-container">
+                    <p>Loading summary...</p>
+                </div>
+                <div id="sales-report-filters" style="margin-top: 1.5rem; text-align: center;">
+                    <button class="btn" onclick="renderSalesSummary(7)">Last 7 Days</button>
+                    <button class="btn" onclick="renderSalesSummary(30)">Last 30 Days</button>
+                    <button class="btn" onclick="renderSalesSummary(90)">Last 90 Days</button>
+                    <button class="btn" onclick="renderSalesSummary(365)">Last 1 Year</button>
+                </div>
+            </section>
+
+            <section id="orders-section" class="admin-section">
+                <h2>Order Management</h2>
+                <div class="dashboard-controls">
+                    <button class="btn" onclick="fetchOrders()"><i class="fas fa-sync-alt"></i> Refresh Orders</button>
+                </div>
+                <div id="orders-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Email / Phone</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Received At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="loader" class="loader" style="display:none;">Loading orders...</div>
+            </section>
+
+            <section id="category-section" class="admin-section">
+                <h2>Category Management</h2>
+                <div id="category-form-container">
+                    <h3>Add New Category</h3>
+                    <form id="add-category-form">
+                        <input type="text" id="category-name" placeholder="Category Name" required>
+                        <input type="text" id="category-icon" placeholder="Font Awesome Icon (e.g., fas fa-star)" required>
+                        <button type="submit" class="btn">Add Category</button>
+                    </form>
+                </div>
+                <div id="categories-container" style="margin-top: 2rem;">
+                    <h3>Existing Categories</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Icon</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categories-tbody"></tbody>
+                    </table>
+                </div>
+                 <div id="category-loader" class="loader" style="display:none;">Loading categories...</div>
+            </section>
+
+            <section id="general-settings-section" class="admin-section">
+                <h2>General Settings</h2>
+                <div id="settings-container" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; font-weight: normal;">
+                            <input type="checkbox" id="show-stock-out-label" style="width: auto; margin-right: 10px; height: 1rem; width: 1rem;">
+                            Show "Stock Out" label on product cards when stock is zero
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section id="product-section" class="admin-section">
+                <h2>Product Management</h2>
+                <div class="dashboard-controls">
+                    <button class="btn" onclick="showProductModal()"><i class="fas fa-plus"></i> Add New Product</button>
+                </div>
+                <div id="products-container" style="margin-top: 1rem;">
+                     <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="product-loader" class="loader" style="display:none;">Loading products...</div>
+            </section>
+
+            <section id="coupon-section" class="admin-section">
+                <h2>Coupon Management</h2>
+                <div class="dashboard-controls">
+                    <button class="btn" onclick="showCouponModal()"><i class="fas fa-plus"></i> Add New Coupon</button>
+                </div>
+                <div id="coupons-container" style="margin-top: 1rem;">
+                     <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Code</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Usage</th>
+                                <th>Expires</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coupons-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="coupon-loader" class="loader" style="display:none;">Loading coupons...</div>
+            </section>
+
+            <section id="review-management-section" class="admin-section">
+                <h2>Review Management</h2>
+                <div id="pending-reviews-container" style="margin-top: 2rem;">
+                    <h3>Pending Reviews</h3>
+                     <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Author</th>
+                                <th>Rating</th>
+                                <th>Review</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-reviews-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div id="approved-reviews-container" style="margin-top: 3rem;">
+                    <h3>Approved Reviews</h3>
+                     <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Author</th>
+                                <th>Rating</th>
+                                <th>Review</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approved-reviews-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div id="review-loader" class="loader" style="display:none;">Loading reviews...</div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
     <div id="product-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeProductModal()">&times;</span>
@@ -217,7 +216,7 @@
                     <input type="text" id="product-name" required>
                 </div>
                 <div class="form-group">
-                    <label for="product-description">Short Description</label>
+                    <label for="product-description">Short Description (Max 3 lines)</label>
                     <textarea id="product-description" rows="3"></textarea>
                 </div>
                 <div class="form-group">
@@ -236,7 +235,7 @@
                  <div class="form-group">
                     <label>Durations (for subscriptions)</label>
                     <div id="durations-container"></div>
-                    <button type="button" class="btn" onclick="addDuration()">Add Duration</button>
+                    <button type="button" class="btn" onclick="addDuration()"><i class="fas fa-plus"></i> Add Duration</button>
                 </div>
                 <div class="form-group">
                     <label for="product-stock">Stock</label>
@@ -312,193 +311,6 @@
         </div>
     </div>
 
-    <div id="dashboard-content" style="display: none;">
-        <header class="header">
-            <h1>Admin Dashboard</h1>
-            <button class="btn" onclick="logout()">Logout</button>
-        </header>
-
-        <main class="container">
-            <section id="sales-report-section" style="margin-bottom: 3rem;">
-                <h2>Sales Summary</h2>
-                <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <div id="sales-summary-container" class="summary-box-container">
-                        <!-- Summary boxes will be rendered here -->
-                        <p>Loading summary...</p>
-                    </div>
-                    <div id="sales-report-filters" style="margin-top: 1.5rem; text-align: center;">
-                        <button class="btn" onclick="renderSalesSummary(1)">Last 1 Day</button>
-                        <button class="btn" onclick="renderSalesSummary(7)">Last 7 Days</button>
-                        <button class="btn" onclick="renderSalesSummary(15)">Last 15 Days</button>
-                        <button class="btn" onclick="renderSalesSummary(30)">Last 30 Days</button>
-                        <button class="btn" onclick="renderSalesSummary(90)">Last 90 Days</button>
-                        <button class="btn" onclick="renderSalesSummary(180)">Last 6 Months</button>
-                        <button class="btn" onclick="renderSalesSummary(365)">Last 1 Year</button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="orders-section">
-                <h2>Order Management</h2>
-                <div class="dashboard-controls">
-                    <button class="btn" onclick="fetchOrders()"><i class="fas fa-sync-alt"></i> Refresh Orders</button>
-                </div>
-                <div id="orders-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Email / Phone</th>
-                                <th>Items</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Received At</th>
-                            </tr>
-                        </thead>
-                        <tbody id="orders-tbody">
-                            <!-- Orders will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="loader" class="loader" style="display:none;">Loading orders...</div>
-            </section>
-
-            <section id="category-section" style="margin-top: 3rem;">
-                <h2>Category Management</h2>
-                <div id="category-form-container">
-                    <h3>Add New Category</h3>
-                    <form id="add-category-form">
-                        <input type="text" id="category-name" placeholder="Category Name" required>
-                        <input type="text" id="category-icon" placeholder="Font Awesome Icon (e.g., fas fa-star)" required>
-                        <button type="submit" class="btn">Add Category</button>
-                    </form>
-                </div>
-                <div id="categories-container" style="margin-top: 2rem;">
-                    <h3>Existing Categories</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Icon</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categories-tbody">
-                            <!-- Categories will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                 <div id="category-loader" class="loader" style="display:none;">Loading categories...</div>
-            </section>
-
-            <section id="general-settings-section" style="margin-top: 3rem; margin-bottom: 3rem;">
-                <h2>General Settings</h2>
-                <div id="settings-container" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; font-weight: normal;">
-                            <input type="checkbox" id="show-stock-out-label" style="width: auto; margin-right: 10px; height: 1rem; width: 1rem;">
-                            Show "Stock Out" label on product cards when stock is zero
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            <section id="product-section" style="margin-top: 3rem;">
-                <h2>Product Management</h2>
-                <div class="dashboard-controls">
-                    <button class="btn" onclick="showProductModal()">Add New Product</button>
-                </div>
-                <div id="products-container" style="margin-top: 2rem;">
-                     <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="products-tbody">
-                            <!-- Products will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="product-loader" class="loader" style="display:none;">Loading products...</div>
-            </section>
-
-            <section id="coupon-section" style="margin-top: 3rem;">
-                <h2>Coupon Management</h2>
-                <div class="dashboard-controls">
-                    <button class="btn" onclick="showCouponModal()">Add New Coupon</button>
-                </div>
-                <div id="coupons-container" style="margin-top: 2rem;">
-                     <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Code</th>
-                                <th>Type</th>
-                                <th>Value</th>
-                                <th>Usage</th>
-                                <th>Expires</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="coupons-tbody">
-                            <!-- Coupons will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="coupon-loader" class="loader" style="display:none;">Loading coupons...</div>
-            </section>
-
-            <section id="review-management-section" style="margin-top: 3rem;">
-                <h2>Review Management</h2>
-                <div id="pending-reviews-container" style="margin-top: 2rem;">
-                    <h3>Pending Reviews</h3>
-                     <table>
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Author</th>
-                                <th>Rating</th>
-                                <th>Review</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pending-reviews-tbody">
-                            <!-- Pending reviews will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="approved-reviews-container" style="margin-top: 3rem;">
-                    <h3>Approved Reviews</h3>
-                     <table>
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Author</th>
-                                <th>Rating</th>
-                                <th>Review</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="approved-reviews-tbody">
-                            <!-- Approved reviews will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="review-loader" class="loader" style="display:none;">Loading reviews...</div>
-            </section>
-        </main>
-    </div>
-
     <script>
         const ADMIN_PASSWORD = "thinkplusbd_admin_2024"; 
 
@@ -507,9 +319,9 @@
             if (password === ADMIN_PASSWORD) {
                 sessionStorage.setItem('isAdminAuthenticated', 'true');
                 document.getElementById('login-container').style.display = 'none';
-                document.getElementById('dashboard-content').style.display = 'block';
+                document.getElementById('sidebar').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'block';
 
-                // Fetch all data after login
                 const promises = [
                     fetchOrders(),
                     fetchCategories(),
@@ -533,6 +345,22 @@
         function logout() {
             sessionStorage.removeItem('isAdminAuthenticated');
             window.location.reload();
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeNavItem = document.querySelector(`.sidebar-nav-item[onclick="showSection('${sectionId}')"]`);
+            if (activeNavItem) {
+                activeNavItem.classList.add('active');
+                document.getElementById('header-title').textContent = activeNavItem.textContent.trim();
+            }
         }
 
         let allProductsData = [];
@@ -608,7 +436,8 @@
         function checkAuth() {
             if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
                 document.getElementById('login-container').style.display = 'none';
-                document.getElementById('dashboard-content').style.display = 'block';
+                document.getElementById('sidebar').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'block';
 
                 const promises = [
                     fetchOrders(),
@@ -631,8 +460,8 @@
         async function fetchCoupons() {
             const tbody = document.getElementById('coupons-tbody');
             const loader = document.getElementById('coupon-loader');
-            tbody.innerHTML = '';
-            loader.style.display = 'block';
+            if(tbody) tbody.innerHTML = '';
+            if(loader) loader.style.display = 'block';
 
             try {
                 const response = await fetch('api/get_coupons.php?t=' + new Date().getTime());
@@ -641,14 +470,15 @@
                 renderCoupons(coupons);
             } catch (error) {
                 console.error('Error fetching coupons:', error);
-                tbody.innerHTML = `<tr><td colspan="7">Failed to fetch coupons.</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="7">Failed to fetch coupons.</td></tr>`;
             } finally {
-                loader.style.display = 'none';
+                if(loader) loader.style.display = 'none';
             }
         }
 
         function renderCoupons(coupons) {
             const tbody = document.getElementById('coupons-tbody');
+            if(!tbody) return;
             try {
                 tbody.innerHTML = '';
 
@@ -669,7 +499,7 @@
                         <td>${c.expiry_date || 'N/A'}</td>
                         <td>
                             <button class="btn" onclick="showCouponModal(${c.id})">Edit</button>
-                            <button class="btn" onclick="deleteCoupon(${c.id})">Delete</button>
+                            <button class="btn btn-danger" onclick="deleteCoupon(${c.id})">Delete</button>
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -701,11 +531,11 @@
                 title.textContent = 'Add Coupon';
                 document.getElementById('coupon-id').value = '';
             }
-            modal.style.display = 'block';
+            modal.classList.add('active');
         }
 
         function closeCouponModal() {
-            document.getElementById('coupon-modal').style.display = 'none';
+            document.getElementById('coupon-modal').classList.remove('active');
         }
 
         document.getElementById('coupon-form').addEventListener('submit', async function(event) {
@@ -724,7 +554,7 @@
                 expiry_date: document.getElementById('coupon-expiry-date').value,
             };
 
-            if (!id) { // Only set these for new coupons
+            if (!id) {
                 couponData.times_used = 0;
                 couponData.created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
             }
@@ -777,9 +607,9 @@
             const approvedTbody = document.getElementById('approved-reviews-tbody');
             const loader = document.getElementById('review-loader');
 
-            pendingTbody.innerHTML = '';
-            approvedTbody.innerHTML = '';
-            loader.style.display = 'block';
+            if(pendingTbody) pendingTbody.innerHTML = '';
+            if(approvedTbody) approvedTbody.innerHTML = '';
+            if(loader) loader.style.display = 'block';
 
             try {
                 const response = await fetch('api/get_products.php?view=admin&t=' + new Date().getTime());
@@ -805,15 +635,16 @@
 
             } catch (error) {
                 console.error('Error fetching reviews:', error);
-                pendingTbody.innerHTML = `<tr><td colspan="5">Failed to fetch reviews.</td></tr>`;
-                approvedTbody.innerHTML = `<tr><td colspan="6">Failed to fetch reviews.</td></tr>`;
+                if(pendingTbody) pendingTbody.innerHTML = `<tr><td colspan="5">Failed to fetch reviews.</td></tr>`;
+                if(approvedTbody) approvedTbody.innerHTML = `<tr><td colspan="6">Failed to fetch reviews.</td></tr>`;
             } finally {
-                loader.style.display = 'none';
+                if(loader) loader.style.display = 'none';
             }
         }
 
         function renderPendingReviews(reviews) {
             const tbody = document.getElementById('pending-reviews-tbody');
+            if(!tbody) return;
             try {
                 tbody.innerHTML = '';
 
@@ -831,7 +662,7 @@
                         <td>${r.text}</td>
                         <td>
                             <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'approve')">Approve</button>
-                            <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                            <button class="btn btn-danger" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -844,6 +675,7 @@
 
         function renderApprovedReviews(reviews) {
             const tbody = document.getElementById('approved-reviews-tbody');
+            if(!tbody) return;
             try {
                 tbody.innerHTML = '';
 
@@ -852,7 +684,6 @@
                     return;
                 }
 
-                // Sort to show featured reviews first
                 reviews.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
 
                 reviews.forEach(r => {
@@ -863,7 +694,7 @@
                     const actionsHTML = r.id ? `
                         <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
                         <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                        <button class="btn btn-danger" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
                     ` : '<span style="color: #999;">Actions unavailable (missing review ID)</span>';
 
                     row.innerHTML = `
@@ -872,9 +703,7 @@
                         <td>${'&#9733;'.repeat(r.rating || 0)}${'&#9734;'.repeat(5 - (r.rating || 0))}</td>
                         <td>${r.text || ''}</td>
                         <td>${r.featured ? '<i class="fas fa-star" style="color: #f1c40f;"></i> Featured' : 'Standard'}</td>
-                        <td>
-                            ${actionsHTML}
-                        </td>
+                        <td>${actionsHTML}</td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -889,11 +718,11 @@
             document.getElementById('edit-review-id').value = reviewId;
             document.getElementById('edit-review-text').value = text;
             document.getElementById('edit-review-rating').value = rating;
-            document.getElementById('edit-review-modal').style.display = 'block';
+            document.getElementById('edit-review-modal').classList.add('active');
         }
 
         function closeEditReviewModal() {
-            document.getElementById('edit-review-modal').style.display = 'none';
+            document.getElementById('edit-review-modal').classList.remove('active');
         }
 
         document.getElementById('edit-review-form').addEventListener('submit', async function(event) {
@@ -939,7 +768,7 @@
                 const result = await response.json();
                 if (result.success) {
                     alert(`Review action [${action}] completed successfully!`);
-                    fetchAdminReviews(); // Refresh both lists
+                    fetchAdminReviews();
                 } else {
                     alert(`Error: ${result.message}`);
                 }
@@ -951,24 +780,25 @@
         async function fetchProducts() {
             const tbody = document.getElementById('products-tbody');
             const loader = document.getElementById('product-loader');
-            tbody.innerHTML = '';
-            loader.style.display = 'block';
+            if(tbody) tbody.innerHTML = '';
+            if(loader) loader.style.display = 'block';
 
             try {
                 const response = await fetch('api/get_products.php?t=' + new Date().getTime());
                 const products = await response.json();
-                allProductsData = products; // Store products globally
+                allProductsData = products;
                 renderProducts(products);
             } catch (error) {
                 console.error('Error fetching products:', error);
-                tbody.innerHTML = `<tr><td colspan="6">Failed to fetch products.</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="6">Failed to fetch products.</td></tr>`;
             } finally {
-                loader.style.display = 'none';
+                if(loader) loader.style.display = 'none';
             }
         }
 
         function renderProducts(products) {
             const tbody = document.getElementById('products-tbody');
+            if(!tbody) return;
             try {
                 tbody.innerHTML = '';
 
@@ -987,7 +817,7 @@
                         <td>${p.stock}</td>
                         <td>
                             <button class="btn" onclick="showProductModal(${p.id})">Edit</button>
-                            <button class="btn" onclick="deleteProduct(${p.id})">Delete</button>
+                            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -1029,7 +859,6 @@
                 document.getElementById('current-image').src = '';
             }
 
-            // Populate category dropdown
             const categorySelect = document.getElementById('product-category');
             fetch('api/get_categories.php?t=' + new Date().getTime()).then(res => res.json()).then(categories => {
                 categorySelect.innerHTML = '<option value="">Select Category</option>';
@@ -1044,11 +873,11 @@
                 });
             });
 
-            modal.style.display = 'block';
+            modal.classList.add('active');
         }
 
         function closeProductModal() {
-            document.getElementById('product-modal').style.display = 'none';
+            document.getElementById('product-modal').classList.remove('active');
         }
 
         function addDuration(label = '', price = '') {
@@ -1058,7 +887,7 @@
             item.innerHTML = `
                 <input type="text" class="duration-label" placeholder="Label (e.g., 1 Year)" value="${label}">
                 <input type="number" class="duration-price" placeholder="Price" value="${price}">
-                <button type="button" class="btn" onclick="this.parentElement.remove()">Remove</button>
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
             `;
             container.appendChild(item);
         }
@@ -1150,8 +979,8 @@
         async function fetchCategories() {
             const tbody = document.getElementById('categories-tbody');
             const loader = document.getElementById('category-loader');
-            tbody.innerHTML = '';
-            loader.style.display = 'block';
+            if(tbody) tbody.innerHTML = '';
+            if(loader) loader.style.display = 'block';
 
             try {
                 const response = await fetch('api/get_categories.php?t=' + new Date().getTime());
@@ -1159,14 +988,15 @@
                 renderCategories(categories);
             } catch (error) {
                 console.error('Error fetching categories:', error);
-                tbody.innerHTML = `<tr><td colspan="3">Failed to fetch categories.</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="3">Failed to fetch categories.</td></tr>`;
             } finally {
-                loader.style.display = 'none';
+                if(loader) loader.style.display = 'none';
             }
         }
 
         function renderCategories(categories) {
             const tbody = document.getElementById('categories-tbody');
+            if(!tbody) return;
             try {
                 tbody.innerHTML = '';
 
@@ -1183,7 +1013,7 @@
                         <td data-field="icon"><i class="${cat.icon}"></i> ${cat.icon}</td>
                         <td>
                             <button class="btn" onclick="editCategory('${cat.id}')">Edit</button>
-                            <button class="btn" onclick="deleteCategory('${cat.id}')">Delete</button>
+                            <button class="btn btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -1282,7 +1112,7 @@
                 const result = await response.json();
                 if (result.success) {
                     alert('Category deleted successfully!');
-                    fetchCategories(); // This will re-render the list, removing the deleted row.
+                    fetchCategories();
                 } else {
                     alert(`Error: ${result.message || 'Could not delete category.'}`);
                     deleteButton.disabled = false;
@@ -1299,8 +1129,8 @@
         async function fetchOrders() {
             const tbody = document.getElementById('orders-tbody');
             const loader = document.getElementById('loader');
-            tbody.innerHTML = '';
-            loader.style.display = 'block';
+            if(tbody) tbody.innerHTML = '';
+            if(loader) loader.style.display = 'block';
 
             try {
                 const response = await fetch('api/get_orders.php?t=' + new Date().getTime());
@@ -1310,22 +1140,23 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    allOrdersData = data.orders; // Store orders globally
+                    allOrdersData = data.orders;
                     renderOrders(data.orders);
-                    renderSalesSummary(7); // Render summary with 7-day default
+                    renderSalesSummary(7);
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="7">Error fetching orders: ${data.message}</td></tr>`;
+                    if(tbody) tbody.innerHTML = `<tr><td colspan="7">Error fetching orders: ${data.message}</td></tr>`;
                 }
             } catch (error) {
                 console.error('Error fetching orders:', error);
-                tbody.innerHTML = `<tr><td colspan="7">Failed to fetch orders. See console for details.</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="7">Failed to fetch orders. See console for details.</td></tr>`;
             } finally {
-                loader.style.display = 'none';
+                if(loader) loader.style.display = 'none';
             }
         }
 
         function renderOrders(orders) {
             const tbody = document.getElementById('orders-tbody');
+            if(!tbody) return;
             try {
                 tbody.innerHTML = '';
 
@@ -1364,7 +1195,6 @@
                     tbody.appendChild(row);
                 });
 
-                // Add event listeners to the new select elements
                 document.querySelectorAll('.status-select').forEach(select => {
                     select.addEventListener('change', updateOrderStatus);
                 });
@@ -1388,22 +1218,19 @@
                 const data = await response.json();
                 if (data.success) {
                     alert('Status updated successfully!');
-                    // Optionally, you can visually update the row or just rely on the next refresh
                 } else {
                     alert(`Failed to update status: ${data.message}`);
-                    fetchOrders(); // Re-fetch to revert the change in the UI
+                    fetchOrders();
                 }
             } catch (error) {
                 console.error('Error updating status:', error);
                 alert('An error occurred while updating the status.');
-                fetchOrders(); // Re-fetch to revert the change in the UI
+                fetchOrders();
             }
         }
 
-        // Check authentication on page load
         document.addEventListener('DOMContentLoaded', checkAuth);
 
-        // Limit short description to 3 lines
         document.addEventListener('DOMContentLoaded', () => {
             const shortDescTextarea = document.getElementById('product-description');
             if (shortDescTextarea) {
@@ -1418,18 +1245,14 @@
             }
         });
 
-        // Handle General Settings
         document.addEventListener('DOMContentLoaded', () => {
             const showStockOutLabelCheckbox = document.getElementById('show-stock-out-label');
 
             if (showStockOutLabelCheckbox) {
-                // Load saved setting
                 const savedSetting = localStorage.getItem('showStockOutLabel');
                 if (savedSetting === 'true') {
                     showStockOutLabelCheckbox.checked = true;
                 }
-
-                // Save setting on change
                 showStockOutLabelCheckbox.addEventListener('change', function() {
                     localStorage.setItem('showStockOutLabel', this.checked);
                     alert('Setting saved!');
@@ -1439,4 +1262,3 @@
     </script>
 </body>
 </html>
-
