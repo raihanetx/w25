@@ -710,16 +710,21 @@
                 const row = document.createElement('tr');
                 const featureButtonText = r.featured ? 'Unfeature' : 'Feature';
                 const featureAction = r.featured ? 'unfeature' : 'feature';
+
+                const actionsHTML = r.id ? `
+                    <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
+                    <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
+                    <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                ` : '<span style="color: #999;">Actions unavailable (missing review ID)</span>';
+
                 row.innerHTML = `
-                    <td>${r.productName}</td>
-                    <td>${r.author}</td>
-                    <td>${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5 - r.rating)}</td>
-                    <td>${r.text}</td>
+                    <td>${r.productName || 'N/A'}</td>
+                    <td>${r.author || 'N/A'}</td>
+                    <td>${'&#9733;'.repeat(r.rating || 0)}${'&#9734;'.repeat(5 - (r.rating || 0))}</td>
+                    <td>${r.text || ''}</td>
                     <td>${r.featured ? '<i class="fas fa-star" style="color: #f1c40f;"></i> Featured' : 'Standard'}</td>
                     <td>
-                        <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                        ${actionsHTML}
                     </td>
                 `;
                 tbody.appendChild(row);

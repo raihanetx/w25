@@ -45,6 +45,9 @@ foreach ($products as $product_key => &$product) {
                     $review_found = true;
                     switch ($action) {
                         case 'approve':
+                            if (!isset($review['id']) || empty($review['id'])) {
+                                $review['id'] = time(); // Assign a new ID if missing
+                            }
                             $review['status'] = 'approved';
                             break;
                         case 'delete':
