@@ -3781,6 +3781,17 @@ function toggleSeeMore(btn, seeLess) {
             handleHashChange(true); 
             updateOrdersNotification();
             window.addEventListener('hashchange', () => handleHashChange(false)); 
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    if (localStorage.getItem('categories_updated') === 'true') {
+                        console.log('Categories updated in another tab. Refreshing...');
+                        localStorage.removeItem('categories_updated');
+                        // Re-fetch products which will in turn re-render categories if needed
+                        fetchProducts(true);
+                    }
+                }
+            });
         });
 
         // --- START OF NEW REVIEW MODAL SCRIPT ---
