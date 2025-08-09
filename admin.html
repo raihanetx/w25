@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Think Plus BD</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #8F87F1;
@@ -169,6 +168,31 @@
             gap: 1rem;
             margin-bottom: 0.5rem;
         }
+        .summary-box-container {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        .summary-box {
+            background-color: #f1f3f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        .summary-box h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            color: #868e96;
+        }
+        .summary-box p {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -296,17 +320,20 @@
 
         <main class="container">
             <section id="sales-report-section" style="margin-bottom: 3rem;">
-                <h2>Sales Report</h2>
+                <h2>Sales Summary</h2>
                 <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <canvas id="salesChart"></canvas>
+                    <div id="sales-summary-container" class="summary-box-container">
+                        <!-- Summary boxes will be rendered here -->
+                        <p>Loading summary...</p>
+                    </div>
                     <div id="sales-report-filters" style="margin-top: 1.5rem; text-align: center;">
-                        <button class="btn" onclick="renderSalesReport(1)">Last 1 Day</button>
-                        <button class="btn" onclick="renderSalesReport(7)">Last 7 Days</button>
-                        <button class="btn" onclick="renderSalesReport(15)">Last 15 Days</button>
-                        <button class="btn" onclick="renderSalesReport(30)">Last 30 Days</button>
-                        <button class="btn" onclick="renderSalesReport(90)">Last 90 Days</button>
-                        <button class="btn" onclick="renderSalesReport(180)">Last 6 Months</button>
-                        <button class="btn" onclick="renderSalesReport(365)">Last 1 Year</button>
+                        <button class="btn" onclick="renderSalesSummary(1)">Last 1 Day</button>
+                        <button class="btn" onclick="renderSalesSummary(7)">Last 7 Days</button>
+                        <button class="btn" onclick="renderSalesSummary(15)">Last 15 Days</button>
+                        <button class="btn" onclick="renderSalesSummary(30)">Last 30 Days</button>
+                        <button class="btn" onclick="renderSalesSummary(90)">Last 90 Days</button>
+                        <button class="btn" onclick="renderSalesSummary(180)">Last 6 Months</button>
+                        <button class="btn" onclick="renderSalesSummary(365)">Last 1 Year</button>
                     </div>
                 </div>
             </section>
@@ -511,116 +538,70 @@
         let allProductsData = [];
         let allCouponsData = [];
         let allOrdersData = [];
-        let salesChartInstance = null;
 
-        function renderSalesReport(days) {
+        function renderSalesSummary(days) {
+            const container = document.getElementById('sales-summary-container');
+            if (!container) return;
+
             try {
-                if (allOrdersData.length === 0) return;
+                if (allOrdersData.length === 0) {
+                    container.innerHTML = "<p>No order data available to generate a summary.</p>";
+                    return;
+                }
 
                 const now = new Date();
-            const salesData = {};
-            let labels = [];
-            let title = '';
-            const chartType = (days > 90) ? 'line' : 'bar';
-
-            if (days <= 90) { // Group by day for shorter periods
-                title = `Sales per Day (Last ${days} Day${days > 1 ? 's' : ''})`;
                 const startDate = new Date();
-                startDate.setDate(now.getDate() - (days -1));
+                startDate.setDate(now.getDate() - days);
                 startDate.setHours(0, 0, 0, 0);
 
-                for (let i = 0; i < days; i++) {
-                    const d = new Date(startDate);
-                    d.setDate(d.getDate() + i);
-                    const isoDate = d.toISOString().split('T')[0];
-                    labels.push(isoDate);
-                    salesData[isoDate] = 0;
-                }
-
-                allOrdersData.forEach(order => {
+                const filteredOrders = allOrdersData.filter(order => {
                     const orderDate = new Date(order.received_at);
-                    orderDate.setHours(0,0,0,0);
-                    if (orderDate >= startDate && orderDate <= now) {
-                        const isoDate = orderDate.toISOString().split('T')[0];
-                        if (salesData.hasOwnProperty(isoDate)) {
-                            salesData[isoDate]++;
-                        }
+                    return orderDate >= startDate && orderDate <= now;
+                });
+
+                let totalOrders = filteredOrders.length;
+                let confirmedOrders = 0;
+                let pendingOrders = 0;
+                let cancelledOrders = 0;
+                let totalRevenue = 0;
+
+                filteredOrders.forEach(order => {
+                    if (order.status === 'Confirmed') {
+                        confirmedOrders++;
+                        totalRevenue += parseFloat(order.totalAmount || 0);
+                    } else if (order.status === 'Pending') {
+                        pendingOrders++;
+                    } else if (order.status === 'Cancelled') {
+                        cancelledOrders++;
                     }
                 });
 
-            } else { // Group by month for longer periods
-                const months = days === 180 ? 6 : 12;
-                title = `Sales per Month (Last ${months} Months)`;
-                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                let tempLabels = {};
+                container.innerHTML = `
+                    <div class="summary-box">
+                        <h3>Total Orders</h3>
+                        <p>${totalOrders}</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Confirmed Orders</h3>
+                        <p>${confirmedOrders}</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Pending Orders</h3>
+                        <p>${pendingOrders}</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Cancelled Orders</h3>
+                        <p>${cancelledOrders}</p>
+                    </div>
+                     <div class="summary-box">
+                        <h3>Total Revenue</h3>
+                        <p>৳${totalRevenue.toFixed(0)}</p>
+                    </div>
+                `;
 
-                for (let i = months - 1; i >= 0; i--) {
-                    let d = new Date();
-                    d.setDate(1);
-                    d.setMonth(d.getMonth() - i);
-                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    const label = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-                    salesData[key] = 0;
-                    tempLabels[key] = label;
-                }
-
-                allOrdersData.forEach(order => {
-                    const orderDate = new Date(order.received_at);
-                    const key = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
-                    if (salesData.hasOwnProperty(key)) {
-                        salesData[key]++;
-                    }
-                });
-                labels = Object.values(tempLabels);
-            }
-
-            const chartData = Object.values(salesData);
-            const ctx = document.getElementById('salesChart').getContext('2d');
-
-            if (salesChartInstance) {
-                salesChartInstance.destroy();
-            }
-
-            salesChartInstance = new Chart(ctx, {
-                type: chartType,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sales',
-                        data: chartData,
-                        backgroundColor: 'rgba(143, 135, 241, 0.2)',
-                        borderColor: 'rgba(143, 135, 241, 1)',
-                        borderWidth: 1,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: title,
-                            font: {
-                                size: 16
-                            }
-                        }
-                    }
-                }
-            });
             } catch (error) {
-                console.error("Error rendering sales report:", error);
-                const chartDiv = document.getElementById('salesChart');
-                if(chartDiv) chartDiv.parentElement.innerHTML = '<p style="color: red;">Could not load sales report.</p>';
+                console.error("Error rendering sales summary:", error);
+                container.innerHTML = '<p style="color: red;">Could not load sales summary.</p>';
             }
         }
 
@@ -1331,7 +1312,7 @@
                 if (data.success) {
                     allOrdersData = data.orders; // Store orders globally
                     renderOrders(data.orders);
-                    renderSalesReport(7); // Render report with 7-day default
+                    renderSalesSummary(7); // Render summary with 7-day default
                 } else {
                     tbody.innerHTML = `<tr><td colspan="7">Error fetching orders: ${data.message}</td></tr>`;
                 }
