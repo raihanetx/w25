@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Think Plus BD</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #8F87F1;
@@ -198,6 +199,7 @@
                 <div class="form-group">
                     <label for="product-long-description">Long Description</label>
                     <textarea id="product-long-description" rows="6"></textarea>
+                    <p style="font-size: 0.8rem; color: #666;">Use **text** to make text bold.</p>
                 </div>
                  <div class="form-group">
                     <label for="product-category">Category</label>
@@ -293,6 +295,22 @@
         </header>
 
         <main class="container">
+            <section id="sales-report-section" style="margin-bottom: 3rem;">
+                <h2>Sales Report</h2>
+                <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <canvas id="salesChart"></canvas>
+                    <div id="sales-report-filters" style="margin-top: 1.5rem; text-align: center;">
+                        <button class="btn" onclick="renderSalesReport(1)">Last 1 Day</button>
+                        <button class="btn" onclick="renderSalesReport(7)">Last 7 Days</button>
+                        <button class="btn" onclick="renderSalesReport(15)">Last 15 Days</button>
+                        <button class="btn" onclick="renderSalesReport(30)">Last 30 Days</button>
+                        <button class="btn" onclick="renderSalesReport(90)">Last 90 Days</button>
+                        <button class="btn" onclick="renderSalesReport(180)">Last 6 Months</button>
+                        <button class="btn" onclick="renderSalesReport(365)">Last 1 Year</button>
+                    </div>
+                </div>
+            </section>
+
             <section id="orders-section">
                 <h2>Order Management</h2>
                 <div class="dashboard-controls">
@@ -345,6 +363,18 @@
                     </table>
                 </div>
                  <div id="category-loader" class="loader" style="display:none;">Loading categories...</div>
+            </section>
+
+            <section id="general-settings-section" style="margin-top: 3rem; margin-bottom: 3rem;">
+                <h2>General Settings</h2>
+                <div id="settings-container" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; font-weight: normal;">
+                            <input type="checkbox" id="show-stock-out-label" style="width: auto; margin-right: 10px; height: 1rem; width: 1rem;">
+                            Show "Stock Out" label on product cards when stock is zero
+                        </label>
+                    </div>
+                </div>
             </section>
 
             <section id="product-section" style="margin-top: 3rem;">
@@ -464,6 +494,113 @@
 
         let allProductsData = [];
         let allCouponsData = [];
+        let allOrdersData = [];
+        let salesChartInstance = null;
+
+        function renderSalesReport(days) {
+            if (allOrdersData.length === 0) return;
+
+            const now = new Date();
+            const salesData = {};
+            let labels = [];
+            let title = '';
+            const chartType = (days > 90) ? 'line' : 'bar';
+
+            if (days <= 90) { // Group by day for shorter periods
+                title = `Sales per Day (Last ${days} Day${days > 1 ? 's' : ''})`;
+                const startDate = new Date();
+                startDate.setDate(now.getDate() - (days -1));
+                startDate.setHours(0, 0, 0, 0);
+
+                for (let i = 0; i < days; i++) {
+                    const d = new Date(startDate);
+                    d.setDate(d.getDate() + i);
+                    const isoDate = d.toISOString().split('T')[0];
+                    labels.push(isoDate);
+                    salesData[isoDate] = 0;
+                }
+
+                allOrdersData.forEach(order => {
+                    const orderDate = new Date(order.received_at);
+                    orderDate.setHours(0,0,0,0);
+                    if (orderDate >= startDate && orderDate <= now) {
+                        const isoDate = orderDate.toISOString().split('T')[0];
+                        if (salesData.hasOwnProperty(isoDate)) {
+                            salesData[isoDate]++;
+                        }
+                    }
+                });
+
+            } else { // Group by month for longer periods
+                const months = days === 180 ? 6 : 12;
+                title = `Sales per Month (Last ${months} Months)`;
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                let tempLabels = {};
+
+                for (let i = months - 1; i >= 0; i--) {
+                    let d = new Date();
+                    d.setDate(1);
+                    d.setMonth(d.getMonth() - i);
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    const label = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+                    salesData[key] = 0;
+                    tempLabels[key] = label;
+                }
+
+                allOrdersData.forEach(order => {
+                    const orderDate = new Date(order.received_at);
+                    const key = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+                    if (salesData.hasOwnProperty(key)) {
+                        salesData[key]++;
+                    }
+                });
+                labels = Object.values(tempLabels);
+            }
+
+            const chartData = Object.values(salesData);
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+            }
+
+            salesChartInstance = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: chartData,
+                        backgroundColor: 'rgba(143, 135, 241, 0.2)',
+                        borderColor: 'rgba(143, 135, 241, 1)',
+                        borderWidth: 1,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: title,
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         function checkAuth() {
             if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
@@ -697,16 +834,21 @@
                 const row = document.createElement('tr');
                 const featureButtonText = r.featured ? 'Unfeature' : 'Feature';
                 const featureAction = r.featured ? 'unfeature' : 'feature';
+
+                const actionsHTML = r.id ? `
+                    <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
+                    <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
+                    <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                ` : '<span style="color: #999;">Actions unavailable (missing review ID)</span>';
+
                 row.innerHTML = `
-                    <td>${r.productName}</td>
-                    <td>${r.author}</td>
-                    <td>${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5 - r.rating)}</td>
-                    <td>${r.text}</td>
+                    <td>${r.productName || 'N/A'}</td>
+                    <td>${r.author || 'N/A'}</td>
+                    <td>${'&#9733;'.repeat(r.rating || 0)}${'&#9734;'.repeat(5 - (r.rating || 0))}</td>
+                    <td>${r.text || ''}</td>
                     <td>${r.featured ? '<i class="fas fa-star" style="color: #f1c40f;"></i> Featured' : 'Standard'}</td>
                     <td>
-                        <button class="btn" onclick="showEditReviewModal(${r.productId}, ${r.id}, \`${r.text}\`, ${r.rating})">Edit</button>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, '${featureAction}')">${featureButtonText}</button>
-                        <button class="btn" onclick="manageReview(${r.productId}, ${r.id}, 'delete')">Delete</button>
+                        ${actionsHTML}
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1101,14 +1243,16 @@
             loader.style.display = 'block';
 
             try {
-                const response = await fetch('api/get_orders.php');
+                const response = await fetch('api/get_orders.php?t=' + new Date().getTime());
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
 
                 if (data.success) {
+                    allOrdersData = data.orders; // Store orders globally
                     renderOrders(data.orders);
+                    renderSalesReport(7); // Render report with 7-day default
                 } else {
                     tbody.innerHTML = `<tr><td colspan="7">Error fetching orders: ${data.message}</td></tr>`;
                 }
@@ -1138,12 +1282,15 @@
                 const receivedAt = new Date(order.received_at).toLocaleString('en-GB');
 
                 const row = document.createElement('tr');
+                const totalAmountCell = `৳${parseFloat(order.totalAmount).toFixed(2)}`;
+                const couponCodeHtml = order.coupon_code ? `<br><small style="color: #27ae60; font-weight: bold;">Coupon: ${order.coupon_code}</small>` : '';
+
                 row.innerHTML = `
                     <td>${order.id}</td>
                     <td>${order.customer.name}</td>
                     <td>${order.customer.email}<br>${order.customer.phone}</td>
                     <td>${itemsHtml}</td>
-                    <td>৳${parseFloat(order.totalAmount).toFixed(2)}</td>
+                    <td>${totalAmountCell}${couponCodeHtml}</td>
                     <td>
                         <select class="status-select" data-order-id="${order.id}">
                             <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
@@ -1190,6 +1337,40 @@
 
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', checkAuth);
+
+        // Limit short description to 3 lines
+        document.addEventListener('DOMContentLoaded', () => {
+            const shortDescTextarea = document.getElementById('product-description');
+            if (shortDescTextarea) {
+                shortDescTextarea.addEventListener('input', function(e) {
+                    const maxLines = 3;
+                    const lines = e.target.value.split('\n');
+
+                    if (lines.length > maxLines) {
+                        e.target.value = lines.slice(0, maxLines).join('\n');
+                    }
+                });
+            }
+        });
+
+        // Handle General Settings
+        document.addEventListener('DOMContentLoaded', () => {
+            const showStockOutLabelCheckbox = document.getElementById('show-stock-out-label');
+
+            if (showStockOutLabelCheckbox) {
+                // Load saved setting
+                const savedSetting = localStorage.getItem('showStockOutLabel');
+                if (savedSetting === 'true') {
+                    showStockOutLabelCheckbox.checked = true;
+                }
+
+                // Save setting on change
+                showStockOutLabelCheckbox.addEventListener('change', function() {
+                    localStorage.setItem('showStockOutLabel', this.checked);
+                    alert('Setting saved!');
+                });
+            }
+        });
     </script>
 </body>
 </html>

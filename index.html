@@ -531,7 +531,7 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
             -webkit-box-orient: vertical;
         }
 
-        .product-card p.description { font-size: 0.85rem; color: #555555; line-height: 1.4em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: pre-line; }
+        .product-card p.description { font-size: 0.85rem; color: #555555; line-height: 1.4em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: pre-line; }
         .product-card-duration { font-size: 0.8em; color: #555; }
         .price { color: var(--primary-color); font-weight: 700; font-size: 1.1rem; }
         .duration-selector { margin-bottom: 1rem; display: none; }
@@ -602,7 +602,7 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
         .related-product-image-container { aspect-ratio: 4 / 3; width: 100%; }
         .related-product-content { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
         .related-product-title { font-size: 1rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.5rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
-        .related-product-description { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: pre-line; }
+        .related-product-description { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: pre-line; }
         .related-product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); margin-top: auto; }
         .related-product-actions { display: none !important; }
 
@@ -629,6 +629,11 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
             color: #555;
             margin-bottom: 1rem;
             line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .product-info-tabs {
@@ -1099,13 +1104,6 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
             /* --- End: Custom styles for product detail page without duration --- */
             .product-detail-title {
                 font-size: 1.8rem; /* Reduced font size for desktop */
-            }
-            .product-short-description {
-                display: -webkit-box;
-                -webkit-line-clamp: 3;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
             .product-info-tabs {
                 max-width: 900px;
@@ -3205,7 +3203,8 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
             const skeletonDiv = document.createElement('div'); skeletonDiv.className = 'skeleton'; imageContainer.appendChild(skeletonDiv);
             const placeholderTextSpan = document.createElement('span'); placeholderTextSpan.className = 'image-placeholder-text'; placeholderTextSpan.style.display = 'none'; placeholderTextSpan.textContent = `Image for ${product.name}`; imageContainer.appendChild(placeholderTextSpan);
             if (product.image && product.image !== 'path/to/default-product-image.jpg') { const img = document.createElement('img'); img.src = product.image; img.alt = product.name; img.className = 'image-fade-in'; imageContainer.appendChild(img); setupSingleImageLoading(img); } else { skeletonDiv.style.display = 'none'; placeholderTextSpan.style.display = 'block'; }
-            if (product.stock > 0) {
+            const showStockOutLabel = localStorage.getItem('showStockOutLabel') === 'true';
+            if (showStockOutLabel && product.stock === 0) {
                 const stockBadge = document.createElement('div');
                 stockBadge.className = 'stock-badge';
                 stockBadge.textContent = 'Stock Out';
@@ -3400,6 +3399,8 @@ function renderReviews(product) {
     }
 
     // Tabs for description and reviews
+    const longDesc = (product.longDescription || product.description || 'An exceptional digital product.').trim();
+    const processedDesc = longDesc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     const tabsHTML = `
         <div class="product-info-tabs">
             <div class="tab-headers">
@@ -3408,7 +3409,7 @@ function renderReviews(product) {
             </div>
             <div id="descriptionTab" class="tab-content" style="display:block;">
                 <div class="expandable-content">
-                    <p>${(product.longDescription || product.description || 'An exceptional digital product.').trim()}</p>
+                    <p>${processedDesc}</p>
                 </div>
                 <button class="see-more-btn" onclick="toggleSeeMore(this, false)">Show More</button>
                 <button class="see-less-btn" onclick="toggleSeeMore(this, true)">See Less</button>
