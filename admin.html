@@ -1215,8 +1215,13 @@
 
         document.getElementById('add-category-form').addEventListener('submit', async function(event) {
             event.preventDefault();
+            const form = event.target;
+            const submitButton = form.querySelector('button[type="submit"]');
             const name = document.getElementById('category-name').value;
             const icon = document.getElementById('category-icon').value;
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Adding...';
 
             try {
                 const response = await fetch('api/add_category.php', {
@@ -1226,15 +1231,19 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('Category added!');
+                    alert('Category added successfully!');
                     fetchCategories();
-                    this.reset();
+                    form.reset();
                     localStorage.setItem('categories_updated', 'true');
                 } else {
-                    alert(`Error: ${result.message}`);
+                    alert(`Error: ${result.message || 'Could not add category. Please check server logs.'}`);
                 }
             } catch (error) {
-                alert('An error occurred while adding the category.');
+                console.error("Fetch error:", error);
+                alert('An error occurred while adding the category. The server response might be invalid.');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Add Category';
             }
         });
 
@@ -1273,9 +1282,15 @@
         }
 
         async function deleteCategory(id) {
-            if (!confirm('Are you sure you want to delete this category?')) {
+            if (!confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
                 return;
             }
+
+            const row = document.querySelector(`#categories-tbody tr[data-id='${id}']`);
+            const deleteButton = row.querySelector("button:last-child");
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = 'Deleting...';
 
             try {
                 const response = await fetch('api/delete_category.php', {
@@ -1285,13 +1300,18 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('Category deleted!');
-                    fetchCategories();
+                    alert('Category deleted successfully!');
+                    fetchCategories(); // This will re-render the list, removing the deleted row.
                 } else {
-                    alert(`Error: ${result.message}`);
+                    alert(`Error: ${result.message || 'Could not delete category.'}`);
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = 'Delete';
                 }
             } catch (error) {
-                alert('An error occurred while deleting the category.');
+                console.error("Fetch error:", error);
+                alert('An error occurred while deleting the category. The server response might be invalid.');
+                deleteButton.disabled = false;
+                deleteButton.textContent = 'Delete';
             }
         }
 
