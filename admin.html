@@ -1282,12 +1282,15 @@
                 const receivedAt = new Date(order.received_at).toLocaleString('en-GB');
 
                 const row = document.createElement('tr');
+                const totalAmountCell = `৳${parseFloat(order.totalAmount).toFixed(2)}`;
+                const couponCodeHtml = order.coupon_code ? `<br><small style="color: #27ae60; font-weight: bold;">Coupon: ${order.coupon_code}</small>` : '';
+
                 row.innerHTML = `
                     <td>${order.id}</td>
                     <td>${order.customer.name}</td>
                     <td>${order.customer.email}<br>${order.customer.phone}</td>
                     <td>${itemsHtml}</td>
-                    <td>৳${parseFloat(order.totalAmount).toFixed(2)}</td>
+                    <td>${totalAmountCell}${couponCodeHtml}</td>
                     <td>
                         <select class="status-select" data-order-id="${order.id}">
                             <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
