@@ -400,13 +400,16 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
         .category-section-title { font-size: 1.75rem; font-weight: 700; color: var(--text-color); text-align: center; margin-top: 1rem; margin-bottom: 1.5rem; }
         .categories.container {
             display: flex;
-            gap: 2.5rem;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-            padding-bottom: 1.5rem;
-            justify-content: center;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding: 1rem 1.5rem 1.5rem;
+            justify-content: flex-start;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-
+        .categories.container::-webkit-scrollbar {
+            display: none;
+        }
         .category {
             background-color: white;
             border-radius: 16px;
@@ -1838,26 +1841,7 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
                  <h2 class="category-section-title">Product Categories</h2>
             </div>
             <section class="categories container">
-                <div class="category" onclick="navigateTo('products', 'course')">
-                    <div class="category-icon-wrapper"><i class="fas fa-graduation-cap category-icon-fa" aria-hidden="true"></i></div>
-                    <span class="category-name">Courses</span>
-                </div>
-                <div class="category" onclick="navigateTo('products', 'subscription')">
-                    <div class="category-icon-wrapper"><i class="fas fa-key category-icon-fa" aria-hidden="true"></i></div>
-                    <span class="category-name">Subscription</span>
-                </div>
-                <div class="category" onclick="navigateTo('products', 'software')">
-                    <div class="category-icon-wrapper"><i class="fas fa-laptop-code category-icon-fa" aria-hidden="true"></i></div>
-                    <span class="category-name">Software</span>
-                </div>
-                <div class="category" onclick="navigateTo('products', 'ebook')">
-                    <div class="category-icon-wrapper"><i class="fas fa-book-open category-icon-fa" aria-hidden="true"></i></div>
-                    <span class="category-name">Ebook</span>
-                </div>
-                <div class="category" onclick="navigateTo('products', 'resource')">
-                    <div class="category-icon-wrapper"><i class="fas fa-tools category-icon-fa" aria-hidden="true"></i></div>
-                    <span class="category-name">Resources</span>
-                </div>
+                <!-- Categories are now loaded dynamically by script.js -->
             </section>
 
             <section class="product-listings container">
@@ -3008,6 +2992,40 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
             });
         }
 
+        function renderHomepageCategories(categories) {
+            const container = document.querySelector('.categories.container');
+            if (!container) return;
+            container.innerHTML = ''; // Clear existing categories
+            if (!categories || categories.length === 0) {
+                container.innerHTML = '<p>No categories found.</p>';
+                return;
+            }
+            categories.forEach(cat => {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category';
+                categoryElement.setAttribute('onclick', `navigateTo('products', '${cat.id}')`);
+                categoryElement.innerHTML = `
+                    <div class="category-icon-wrapper"><i class="${cat.icon} category-icon-fa" aria-hidden="true"></i></div>
+                    <span class="category-name">${cat.name}</span>
+                `;
+                container.appendChild(categoryElement);
+            });
+        }
+
+        async function fetchAndRenderCategories() {
+            try {
+                const response = await fetch('api/get_categories.php?t=' + new Date().getTime());
+                const categories = await response.json();
+                if (Array.isArray(categories)) {
+                    renderHomepageCategories(categories);
+                }
+            } catch (error) {
+                console.error("Could not fetch or render categories:", error);
+                const container = document.querySelector('.categories.container');
+                if(container) container.innerHTML = '<p style="color:red;">Error loading categories.</p>';
+            }
+        }
+
         function setupEventListeners() {
             window.addEventListener('resize', adjustProductDetailHeight);
             if (domElements.cartIcon) { domElements.cartIcon.addEventListener('click', () => { navigateTo('cart'); }); }
@@ -3778,6 +3796,7 @@ function toggleSeeMore(btn, seeLess) {
             loadCartFromLocalStorage(); 
             loadOrdersFromLocalStorage(); 
             await fetchProducts(true);
+            await fetchAndRenderCategories(); // Fetch categories on initial load
             handleHashChange(true); 
             updateOrdersNotification();
             window.addEventListener('hashchange', () => handleHashChange(false)); 
@@ -3785,10 +3804,9 @@ function toggleSeeMore(btn, seeLess) {
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible') {
                     if (localStorage.getItem('categories_updated') === 'true') {
-                        console.log('Categories updated in another tab. Refreshing...');
+                        console.log('Categories updated in another tab. Refreshing categories...');
                         localStorage.removeItem('categories_updated');
-                        // Re-fetch products which will in turn re-render categories if needed
-                        fetchProducts(true);
+                        fetchAndRenderCategories();
                     }
                 }
             });
